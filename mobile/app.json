@@ -4,16 +4,17 @@
     "slug": "hospital-management",
     "version": "1.0.1",
     "orientation": "portrait",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
       "resizeMode": "contain",
-      "backgroundColor": "#2563EB"
+      "backgroundColor": "#ffffff"
     },
     "android": {
       "package": "com.hospital.management",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#2563EB"
+        "backgroundColor": "#ffffff"
       }
     },
     "ios": {
