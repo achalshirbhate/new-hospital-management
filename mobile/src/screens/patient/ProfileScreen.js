@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, RefreshControl, TouchableOpacity, Alert } from 'react-native';
 import api from '../../api/axios';
 import Card from '../../components/Card';
 import { useAuth } from '../../context/AuthContext';
 import { colors } from '../../theme';
 
 export default function ProfileScreen() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [profile, setProfile] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -17,12 +17,22 @@ export default function ProfileScreen() {
   useEffect(() => { load(); }, []);
   const onRefresh = async () => { setRefreshing(true); await load(); setRefreshing(false); };
 
+  const handleLogout = () => {
+    Alert.alert('Logout', 'Are you sure you want to logout?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Logout', style: 'destructive', onPress: logout }
+    ]);
+  };
+
   return (
     <ScrollView style={styles.container} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
       <View style={styles.hero}>
         <View style={styles.avatar}><Text style={styles.avatarText}>👤</Text></View>
         <Text style={styles.name}>{user?.name}</Text>
         <Text style={styles.email}>{user?.email}</Text>
+        <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
+          <Text style={styles.logoutText}>🚪 Logout</Text>
+        </TouchableOpacity>
       </View>
 
       {profile && (
@@ -57,6 +67,8 @@ const styles = StyleSheet.create({
   avatarText: { fontSize: 32 },
   name: { fontSize: 22, fontWeight: '800', color: '#fff' },
   email: { fontSize: 13, color: 'rgba(255,255,255,0.75)', marginTop: 4 },
+  logoutBtn: { marginTop: 14, backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 20, paddingVertical: 8, borderRadius: 20 },
+  logoutText: { color: '#fff', fontSize: 13, fontWeight: '700' },
   row: { flexDirection: 'row', gap: 16 },
   infoItem: { flex: 1 },
   infoLabel: { fontSize: 12, color: colors.gray400, fontWeight: '600', marginBottom: 4 },

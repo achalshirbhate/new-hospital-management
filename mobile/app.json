@@ -2,7 +2,7 @@
   "expo": {
     "name": "Hospital Management",
     "slug": "hospital-management",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "splash": {
@@ -10,7 +10,11 @@
       "backgroundColor": "#2563EB"
     },
     "android": {
-      "package": "com.hospital.management"
+      "package": "com.hospital.management",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#2563EB"
+      }
     },
     "ios": {
       "bundleIdentifier": "com.hospital.management"

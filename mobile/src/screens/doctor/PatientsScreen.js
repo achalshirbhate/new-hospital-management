@@ -7,9 +7,11 @@ import api from '../../api/axios';
 import Card from '../../components/Card';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
+import { useAuth } from '../../context/AuthContext';
 import { colors } from '../../theme';
 
 export default function PatientsScreen() {
+  const { logout } = useAuth();
   const [patients, setPatients] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [expanded, setExpanded] = useState(null);
@@ -37,14 +39,26 @@ export default function PatientsScreen() {
     } finally { setLoading(false); }
   };
 
+  const handleLogout = () => {
+    Alert.alert('Logout', 'Are you sure you want to logout?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Logout', style: 'destructive', onPress: logout }
+    ]);
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <ScrollView style={styles.container} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
         <View style={styles.topRow}>
           <Text style={styles.title}>My Patients</Text>
-          <TouchableOpacity onPress={() => setShowModal(true)} style={styles.addBtn}>
-            <Text style={styles.addBtnText}>+ Add</Text>
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
+              <Text style={styles.logoutText}>🚪</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setShowModal(true)} style={styles.addBtn}>
+              <Text style={styles.addBtnText}>+ Add</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {patients.map(p => (
@@ -92,6 +106,8 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: '800', color: colors.gray800 },
   addBtn: { backgroundColor: colors.primary, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10 },
   addBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
+  logoutBtn: { backgroundColor: '#fee2e2', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10 },
+  logoutText: { fontSize: 16 },
   name: { fontSize: 16, fontWeight: '700', color: colors.gray800 },
   sub: { fontSize: 13, color: colors.gray500, marginTop: 2 },
   expanded: { marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.gray100 },
