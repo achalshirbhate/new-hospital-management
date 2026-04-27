@@ -12,19 +12,15 @@ const signToken = (id) =>
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, role, specialization, age } = req.body;
+    const { name, email, password, age } = req.body;
     if (await User.findOne({ email }))
       return res.status(400).json({ message: 'Email already exists' });
 
-    const user = await User.create({ name, email, password, role });
+    // Every new user is PATIENT by default — no role selection allowed
+    const user = await User.create({ name, email, password, role: 'PATIENT' });
+    await Patient.create({ userId: user._id, age: age || 0 });
 
-    if (role === 'DOCTOR') {
-      await Doctor.create({ userId: user._id, specialization: specialization || 'General' });
-    } else if (role === 'PATIENT') {
-      await Patient.create({ userId: user._id, age: age || 0 });
-    }
-
-    res.status(201).json({ token: signToken(user._id), user: { id: user._id, name, email, role } });
+    res.status(201).json({ token: signToken(user._id), user: { id: user._id, name, email, role: 'PATIENT' } });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

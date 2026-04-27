@@ -20,13 +20,12 @@ router.get('/', protect, async (req, res) => {
   }
 });
 
-// POST /api/chat-token/request - PATIENT requests chat or video token
+// POST /api/chat-token/request - PATIENT requests chat or video (no doctor selection)
 router.post('/request', protect, authorize('PATIENT'), async (req, res) => {
   try {
-    const { doctorId, type = 'CHAT' } = req.body;
+    const { type = 'CHAT' } = req.body;
     const token = await ChatToken.create({
       patientId: req.user._id,
-      doctorId,
       token: uuidv4(),
       type,
       status: 'PENDING'
@@ -37,14 +36,16 @@ router.post('/request', protect, authorize('PATIENT'), async (req, res) => {
   }
 });
 
-// PUT /api/chat-token/:id/approve - MAIN_DOCTOR approves, sets 30-min window
+// PUT /api/chat-token/:id/approve - MAIN_DOCTOR assigns doctor + approves
 router.put('/:id/approve', protect, authorize('MAIN_DOCTOR'), async (req, res) => {
   try {
+    const { doctorId } = req.body;
+    if (!doctorId) return res.status(400).json({ message: 'Please assign a doctor before approving' });
     const startTime = new Date();
     const endTime = new Date(startTime.getTime() + 30 * 60 * 1000);
     const token = await ChatToken.findByIdAndUpdate(
       req.params.id,
-      { status: 'ACTIVE', startTime, endTime, approvedBy: req.user._id },
+      { status: 'ACTIVE', startTime, endTime, approvedBy: req.user._id, doctorId },
       { new: true }
     );
     res.json(token);

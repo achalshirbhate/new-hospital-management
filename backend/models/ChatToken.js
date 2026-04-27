@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const chatTokenSchema = new mongoose.Schema({
   patientId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  doctorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  doctorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
   token: { type: String, required: true, unique: true },
   type: { type: String, enum: ['CHAT', 'VIDEO'], default: 'CHAT' },
   startTime: { type: Date },
