@@ -1,0 +1,31 @@
+version: '3.8'
+services:
+  mongo:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  backend:
+    build: ./backend
+    ports:
+      - "5000:5000"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/hospital_management
+      - JWT_SECRET=hospital_super_secret_jwt_key_2024
+      - CLIENT_URL=http://localhost:3000
+    depends_on:
+      - mongo
+    volumes:
+      - ./backend/uploads:/app/uploads
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  mongo_data:
