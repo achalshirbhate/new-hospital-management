@@ -12,42 +12,38 @@ async function seed() {
   await mongoose.connect(process.env.MONGO_URI);
   console.log('Connected to MongoDB');
 
-  // Clear existing
-  await Promise.all([User.deleteMany(), Doctor.deleteMany(), Patient.deleteMany(), Revenue.deleteMany(), Expense.deleteMany()]);
+  // Only delete users/doctors — keep existing patients
+  await Promise.all([User.deleteMany(), Doctor.deleteMany(), Patient.deleteMany()]);
 
-  // Main Doctor
-  const mainDoc = await User.create({ name: 'Dr. Admin', email: 'admin@hospital.com', password: 'password123', role: 'MAIN_DOCTOR' });
+  // ── ADMIN (Main Doctor) ──────────────────────────────
+  await User.create({
+    name: 'Admin',
+    email: 'admin@hospital.com',
+    password: 'Admin@1234',
+    role: 'MAIN_DOCTOR'
+  });
 
-  // Doctors
-  const doc1User = await User.create({ name: 'Dr. Sarah Johnson', email: 'sarah@hospital.com', password: 'password123', role: 'DOCTOR' });
-  const doc2User = await User.create({ name: 'Dr. Mike Chen', email: 'mike@hospital.com', password: 'password123', role: 'DOCTOR' });
-  await Doctor.create({ userId: doc1User._id, specialization: 'Cardiology' });
-  await Doctor.create({ userId: doc2User._id, specialization: 'Neurology' });
+  // ── DOCTORS ─────────────────────────────────────────
+  const doc1 = await User.create({ name: 'Dr. Sarah Johnson', email: 'sarah@hospital.com', password: 'Doctor@1234', role: 'DOCTOR' });
+  const doc2 = await User.create({ name: 'Dr. Mike Chen',     email: 'mike@hospital.com',  password: 'Doctor@1234', role: 'DOCTOR' });
+  const doc3 = await User.create({ name: 'Dr. Priya Sharma',  email: 'priya@hospital.com', password: 'Doctor@1234', role: 'DOCTOR' });
 
-  // Patients
-  const pat1User = await User.create({ name: 'John Smith', email: 'john@patient.com', password: 'password123', role: 'PATIENT' });
-  const pat2User = await User.create({ name: 'Emily Davis', email: 'emily@patient.com', password: 'password123', role: 'PATIENT' });
-  await Patient.create({ userId: pat1User._id, age: 45, medicalHistory: 'Hypertension, Type 2 Diabetes', assignedDoctor: doc1User._id });
-  await Patient.create({ userId: pat2User._id, age: 32, medicalHistory: 'Migraine, Anxiety', assignedDoctor: doc2User._id });
+  await Doctor.create({ userId: doc1._id, specialization: 'Cardiology' });
+  await Doctor.create({ userId: doc2._id, specialization: 'Neurology' });
+  await Doctor.create({ userId: doc3._id, specialization: 'General Medicine' });
 
-  // Revenue & Expenses
-  await Revenue.insertMany([
-    { amount: 15000, source: 'Consultation Fees', date: new Date() },
-    { amount: 8500, source: 'Lab Tests', date: new Date() },
-    { amount: 12000, source: 'Surgery', date: new Date() },
-  ]);
-  await Expense.insertMany([
-    { amount: 5000, description: 'Medical Supplies', date: new Date() },
-    { amount: 3000, description: 'Staff Salaries', date: new Date() },
-    { amount: 1500, description: 'Utilities', date: new Date() },
-  ]);
-
-  console.log('\n✅ Seed data created:');
-  console.log('  Main Doctor: admin@hospital.com / password123');
-  console.log('  Doctor 1:    sarah@hospital.com / password123');
-  console.log('  Doctor 2:    mike@hospital.com  / password123');
-  console.log('  Patient 1:   john@patient.com   / password123');
-  console.log('  Patient 2:   emily@patient.com  / password123');
+  console.log('\n✅ Accounts created successfully!\n');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('🔐 ADMIN (Main Doctor)');
+  console.log('   Email:    admin@hospital.com');
+  console.log('   Password: Admin@1234');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('👨‍⚕️ DOCTORS (all use same password)');
+  console.log('   sarah@hospital.com  → Cardiology');
+  console.log('   mike@hospital.com   → Neurology');
+  console.log('   priya@hospital.com  → General Medicine');
+  console.log('   Password: Doctor@1234');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
   await mongoose.disconnect();
 }
