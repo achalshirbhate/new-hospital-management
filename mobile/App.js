@@ -7,41 +7,35 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { colors } from './src/theme';
 
-// Auth screens
+// ── Auth ──────────────────────────────────────────────────────────────────────
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
 import ForgotPasswordScreen from './src/screens/ForgotPasswordScreen';
 import ResetPasswordScreen from './src/screens/ResetPasswordScreen';
 
-// Main Doctor (Admin) screens
+// ── Admin (Main Doctor) ───────────────────────────────────────────────────────
 import OverviewScreen from './src/screens/main/OverviewScreen';
 import AdminChatScreen from './src/screens/main/AdminChatScreen';
 import ReferralsScreen from './src/screens/main/ReferralsScreen';
 import SocialFeedManagerScreen from './src/screens/main/SocialFeedScreen';
 import LaunchPadAdminScreen from './src/screens/main/LaunchPadScreen';
 
-// Doctor screens
+// ── Doctor ────────────────────────────────────────────────────────────────────
 import PatientsScreen from './src/screens/doctor/PatientsScreen';
 import DoctorChatScreen from './src/screens/doctor/DoctorChatScreen';
-import LaunchPadSubmitScreen from './src/screens/shared/LaunchPadSubmitScreen';
-import SocialFeedScreen from './src/screens/shared/SocialFeedScreen';
+import DoctorProfileScreen from './src/screens/doctor/DoctorProfileScreen';
 
-// Patient screens
-import PatientHomeScreen from './src/screens/patient/PatientHomeScreen';
-import PatientChatScreen from './src/screens/patient/ChatScreen';
+// ── Patient ───────────────────────────────────────────────────────────────────
+import AppointmentsScreen from './src/screens/patient/AppointmentsScreen';
+import MedicalHistoryScreen from './src/screens/patient/MedicalHistoryScreen';
+import PatientProfileScreen from './src/screens/patient/PatientProfileScreen';
+
+// ── Shared ────────────────────────────────────────────────────────────────────
+import SocialFeedScreen from './src/screens/shared/SocialFeedScreen';
+import LaunchPadSubmitScreen from './src/screens/shared/LaunchPadSubmitScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
-
-const tabIcon = (name, focused) => {
-  const icons = {
-    Home: '🏠', Chat: '💬', Referrals: '🔄', Feed: '📢', LaunchPad: '🚀',
-    Patients: '👥', Admin: '⚙️', Profile: '👤',
-  };
-  return (
-    <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.5 }}>{icons[name] || '•'}</Text>
-  );
-};
 
 const tabOptions = {
   tabBarActiveTintColor: colors.primary,
@@ -54,15 +48,19 @@ const tabOptions = {
     borderTopColor: colors.border,
     borderTopWidth: 1,
   },
-  tabBarLabelStyle: { fontSize: 10, fontWeight: '600' },
+  tabBarLabelStyle: { fontSize: 10, fontWeight: '700' },
   headerShown: false,
 };
 
+// ── Admin Tabs ────────────────────────────────────────────────────────────────
 function MainDoctorTabs() {
   return (
     <Tab.Navigator screenOptions={({ route }) => ({
       ...tabOptions,
-      tabBarIcon: ({ focused }) => tabIcon(route.name, focused),
+      tabBarIcon: ({ focused }) => {
+        const icons = { Home: '🏠', Chat: '💬', Referrals: '🔄', Feed: '📢', LaunchPad: '🚀' };
+        return <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.45 }}>{icons[route.name] || '•'}</Text>;
+      },
     })}>
       <Tab.Screen name="Home" component={OverviewScreen} />
       <Tab.Screen name="Chat" component={AdminChatScreen} />
@@ -73,34 +71,41 @@ function MainDoctorTabs() {
   );
 }
 
+// ── Doctor Tabs (2 tabs as requested) ────────────────────────────────────────
 function DoctorTabs() {
   return (
     <Tab.Navigator screenOptions={({ route }) => ({
       ...tabOptions,
-      tabBarIcon: ({ focused }) => tabIcon(route.name, focused),
+      tabBarIcon: ({ focused }) => {
+        const icons = { Patients: '👥', Chat: '💬', Profile: '👤' };
+        return <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.45 }}>{icons[route.name] || '•'}</Text>;
+      },
     })}>
       <Tab.Screen name="Patients" component={PatientsScreen} />
       <Tab.Screen name="Chat" component={DoctorChatScreen} />
-      <Tab.Screen name="LaunchPad" component={LaunchPadSubmitScreen} />
-      <Tab.Screen name="Feed" component={SocialFeedScreen} />
+      <Tab.Screen name="Profile" component={DoctorProfileScreen} />
     </Tab.Navigator>
   );
 }
 
+// ── Patient Tabs (3 tabs as requested) ───────────────────────────────────────
 function PatientTabs() {
   return (
     <Tab.Navigator screenOptions={({ route }) => ({
       ...tabOptions,
-      tabBarIcon: ({ focused }) => tabIcon(route.name, focused),
+      tabBarIcon: ({ focused }) => {
+        const icons = { Appointments: '📅', History: '📋', Profile: '👤' };
+        return <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.45 }}>{icons[route.name] || '•'}</Text>;
+      },
     })}>
-      <Tab.Screen name="Home" component={PatientHomeScreen} />
-      <Tab.Screen name="Chat" component={PatientChatScreen} />
-      <Tab.Screen name="LaunchPad" component={LaunchPadSubmitScreen} />
-      <Tab.Screen name="Feed" component={SocialFeedScreen} />
+      <Tab.Screen name="Appointments" component={AppointmentsScreen} />
+      <Tab.Screen name="History" component={MedicalHistoryScreen} />
+      <Tab.Screen name="Profile" component={PatientProfileScreen} />
     </Tab.Navigator>
   );
 }
 
+// ── Root Navigator ────────────────────────────────────────────────────────────
 function RootNavigator() {
   const { user, loading } = useAuth();
 
