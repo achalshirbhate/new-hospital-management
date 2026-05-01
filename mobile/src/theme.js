@@ -1,28 +1,51 @@
 export const colors = {
-  primary: '#2563EB',
-  primaryLight: '#EFF6FF',
-  secondary: '#7C3AED',
-  secondaryLight: '#F5F3FF',
-  success: '#16A34A',
-  successLight: '#F0FDF4',
-  danger: '#DC2626',
-  dangerLight: '#FEF2F2',
-  warning: '#D97706',
-  warningLight: '#FFFBEB',
-  gray50: '#F8FAFC',
-  gray100: '#F1F5F9',
-  gray200: '#E2E8F0',
-  gray400: '#94A3B8',
-  gray500: '#64748B',
-  gray700: '#334155',
-  gray800: '#1E293B',
+  primary: '#1A73E8',       // Main blue
+  primaryLight: '#E8F0FE',  // Light blue background
+  primaryDark: '#1557B0',   // Dark blue
+  secondary: '#00BCD4',     // Cyan accent
   white: '#FFFFFF',
+  background: '#F0F6FF',    // Very light blue background
+  cardBg: '#FFFFFF',
+  border: '#D0E4FF',
+  text: '#1A1A2E',
+  textSecondary: '#5F6B7A',
+  textLight: '#9AA5B4',
+  success: '#34A853',
+  successLight: '#E6F4EA',
+  danger: '#EA4335',
+  dangerLight: '#FCE8E6',
+  warning: '#FBBC04',
+  warningLight: '#FEF7E0',
+  emergency: '#D93025',
+  emergencyLight: '#FCE8E6',
+  gray100: '#F8F9FA',
+  gray200: '#E9ECEF',
+  gray400: '#9AA5B4',
+  gray600: '#5F6B7A',
+  shadow: 'rgba(26, 115, 232, 0.12)',
+};
+
+export const spacing = {
+  xs: 4, sm: 8, md: 16, lg: 24, xl: 32,
+};
+
+export const radius = {
+  sm: 8, md: 12, lg: 16, xl: 24, full: 999,
 };
 
 export const shadow = {
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.06,
-  shadowRadius: 8,
-  elevation: 3,
+  sm: {
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  md: {
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 4,
+  },
 };

@@ -49,11 +49,29 @@ app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/revenue', require('./routes/revenue'));
 app.use('/api/launchpad', require('./routes/launchpad'));
 app.use('/api/social', require('./routes/social'));
+app.use('/api/messages', require('./routes/messages'));
+app.use('/api/emergency', require('./routes/emergency'));
 
-// Socket.io
+// Socket.io - persist messages to DB
+const Message = require('./models/Message');
 io.on('connection', (socket) => {
   socket.on('join-room', (roomId) => socket.join(roomId));
-  socket.on('send-message', (data) => io.to(data.roomId).emit('receive-message', data));
+  socket.on('send-message', async (data) => {
+    try {
+      // Save to DB
+      const msg = await Message.create({
+        roomId: data.roomId,
+        senderId: data.senderId,
+        senderName: data.senderName,
+        senderRole: data.senderRole,
+        text: data.text,
+        messageType: 'TEXT',
+      });
+      io.to(data.roomId).emit('receive-message', msg);
+    } catch {
+      io.to(data.roomId).emit('receive-message', data);
+    }
+  });
   socket.on('disconnect', () => {});
 });
 

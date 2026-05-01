@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput,
-  FlatList, KeyboardAvoidingView, Platform, ScrollView,
-  RefreshControl, Alert,
+  FlatList, KeyboardAvoidingView, Platform, ScrollView, RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { io } from 'socket.io-client';
@@ -10,48 +9,36 @@ import api, { BASE_URL } from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import { colors, spacing, radius, shadow } from '../../theme';
 
-export default function PatientChatScreen() {
+export default function DoctorChatScreen() {
   const { user } = useAuth();
-  const [tokens, setTokens] = useState([]);
+  const [patients, setPatients] = useState([]);
   const [activeChat, setActiveChat] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [refreshing, setRefreshing] = useState(false);
-  const [requesting, setRequesting] = useState(false);
   const socketRef = useRef(null);
   const scrollRef = useRef(null);
 
   const load = useCallback(async () => {
     try {
-      const { data } = await api.get('/chat-token');
-      setTokens(data);
+      const { data } = await api.get('/patients');
+      setPatients(data.filter(p => p.approvalStatus === 'APPROVED'));
     } catch {}
   }, []);
 
   useEffect(() => { load(); }, []);
   const onRefresh = useCallback(async () => { setRefreshing(true); await load(); setRefreshing(false); }, [load]);
 
-  const requestChat = async (type) => {
-    setRequesting(true);
-    try {
-      await api.post('/chat-token/request', { type });
-      load();
-      Alert.alert('✅ Request Sent', 'Your request has been sent to Admin. You will be notified when approved.');
-    } catch (err) {
-      Alert.alert('Error', err.response?.data?.message || 'Failed to send request');
-    } finally { setRequesting(false); }
-  };
-
-  const openChat = async (token) => {
-    setActiveChat(token);
+  const openChat = async (roomId, name, type) => {
+    setActiveChat({ roomId, name, type });
     setMessages([]);
     try {
-      const { data } = await api.get(`/messages/${token.token}`);
+      const { data } = await api.get(`/messages/${roomId}`);
       setMessages(data);
     } catch {}
     socketRef.current?.disconnect();
     socketRef.current = io(BASE_URL);
-    socketRef.current.emit('join-room', token.token);
+    socketRef.current.emit('join-room', roomId);
     socketRef.current.on('receive-message', (msg) => {
       setMessages(prev => {
         if (prev.find(m => m._id === msg._id)) return prev;
@@ -70,10 +57,10 @@ export default function PatientChatScreen() {
   const sendMessage = () => {
     if (!input.trim() || !activeChat) return;
     const data = {
-      roomId: activeChat.token,
+      roomId: activeChat.roomId,
       senderId: user.id,
       senderName: user.name,
-      senderRole: 'PATIENT',
+      senderRole: user.role,
       text: input.trim(),
     };
     socketRef.current?.emit('send-message', data);
@@ -82,12 +69,7 @@ export default function PatientChatScreen() {
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
   };
 
-  const activeTokens = tokens.filter(t => t.status === 'ACTIVE');
-  const pendingTokens = tokens.filter(t => t.status === 'PENDING');
-  const pastTokens = tokens.filter(t => t.status === 'EXPIRED' || t.status === 'REJECTED');
-
   if (activeChat) {
-    const timeLeft = activeChat.endTime ? Math.max(0, Math.floor((new Date(activeChat.endTime) - new Date()) / 60000)) : 0;
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.white }}>
         <View style={styles.chatHeader}>
@@ -96,11 +78,11 @@ export default function PatientChatScreen() {
           </TouchableOpacity>
           <View style={styles.chatHeaderInfo}>
             <View style={styles.chatAvatar}>
-              <Text style={styles.chatAvatarText}>{activeChat.doctorId?.name?.charAt(0) || 'D'}</Text>
+              <Text style={styles.chatAvatarText}>{activeChat.name?.charAt(0)}</Text>
             </View>
             <View>
-              <Text style={styles.chatHeaderName}>Dr. {activeChat.doctorId?.name || 'Doctor'}</Text>
-              <Text style={styles.chatHeaderSub}>⏱ {timeLeft} min remaining</Text>
+              <Text style={styles.chatHeaderName}>{activeChat.name}</Text>
+              <Text style={styles.chatHeaderSub}>{activeChat.type === 'admin' ? '🏥 Admin' : '🫀 Patient'}</Text>
             </View>
           </View>
         </View>
@@ -155,82 +137,53 @@ export default function PatientChatScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>💬 Chat</Text>
+        <Text style={styles.headerTitle}>💬 Chats</Text>
       </View>
 
       <ScrollView
         style={{ flex: 1, padding: spacing.md }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
       >
-        {/* Request New Chat */}
-        <View style={styles.requestSection}>
-          <Text style={styles.sectionTitle}>Request Appointment</Text>
-          <Text style={styles.sectionSub}>Chat is only available through scheduled appointments</Text>
-          <View style={styles.requestBtns}>
-            <TouchableOpacity style={styles.requestBtn} onPress={() => requestChat('CHAT')} disabled={requesting}>
-              <Text style={styles.requestBtnIcon}>💬</Text>
-              <Text style={styles.requestBtnText}>Chat</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.requestBtn, styles.requestBtnVideo]} onPress={() => requestChat('VIDEO')} disabled={requesting}>
-              <Text style={styles.requestBtnIcon}>📹</Text>
-              <Text style={[styles.requestBtnText, { color: colors.white }]}>Video Call</Text>
-            </TouchableOpacity>
+        {/* Admin Chat - always available */}
+        <Text style={styles.sectionTitle}>Admin</Text>
+        <TouchableOpacity
+          style={[styles.chatItem, styles.adminChatItem]}
+          onPress={() => openChat(`admin-doctor-${user.id}`, 'Dr. Ravikant Patil (Admin)', 'admin')}
+        >
+          <View style={[styles.chatItemAvatar, { backgroundColor: colors.primary }]}>
+            <Text style={[styles.chatItemAvatarText, { color: colors.white }]}>R</Text>
           </View>
-        </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.chatItemName}>Dr. Ravikant Patil</Text>
+            <Text style={styles.chatItemSub}>🏥 Admin · Always available</Text>
+          </View>
+          <Text style={styles.chatItemArrow}>›</Text>
+        </TouchableOpacity>
 
-        {/* Active Sessions */}
-        {activeTokens.length > 0 && (
-          <View style={{ marginBottom: spacing.md }}>
-            <Text style={styles.sectionTitle}>🟢 Active Sessions</Text>
-            {activeTokens.map(t => (
-              <TouchableOpacity key={t._id} style={styles.activeCard} onPress={() => openChat(t)}>
-                <View style={styles.activeCardLeft}>
-                  <View style={styles.activeDot} />
-                  <View>
-                    <Text style={styles.activeCardTitle}>Dr. {t.doctorId?.name || 'Doctor'}</Text>
-                    <Text style={styles.activeCardSub}>{t.type} · Tap to join</Text>
-                  </View>
+        {/* Patient Chats */}
+        <Text style={[styles.sectionTitle, { marginTop: spacing.md }]}>My Patients ({patients.length})</Text>
+        {patients.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyIcon}>👥</Text>
+            <Text style={styles.emptyText}>No approved patients yet</Text>
+          </View>
+        ) : (
+          patients.map(p => {
+            const roomId = `doctor-patient-${user.id}-${p._id}`;
+            return (
+              <TouchableOpacity key={p._id} style={styles.chatItem} onPress={() => openChat(roomId, p.userId?.name, 'patient')}>
+                <View style={styles.chatItemAvatar}>
+                  <Text style={styles.chatItemAvatarText}>{p.userId?.name?.charAt(0) || 'P'}</Text>
                 </View>
-                <Text style={styles.activeCardArrow}>›</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.chatItemName}>{p.userId?.name}</Text>
+                  <Text style={styles.chatItemSub}>🫀 Patient</Text>
+                </View>
+                <Text style={styles.chatItemArrow}>›</Text>
               </TouchableOpacity>
-            ))}
-          </View>
+            );
+          })
         )}
-
-        {/* Pending Requests */}
-        {pendingTokens.length > 0 && (
-          <View style={{ marginBottom: spacing.md }}>
-            <Text style={styles.sectionTitle}>⏳ Pending Requests</Text>
-            {pendingTokens.map(t => (
-              <View key={t._id} style={styles.pendingCard}>
-                <Text style={styles.pendingIcon}>⏳</Text>
-                <View>
-                  <Text style={styles.pendingTitle}>{t.type} Request</Text>
-                  <Text style={styles.pendingSub}>Waiting for Admin approval</Text>
-                  <Text style={styles.pendingDate}>{new Date(t.createdAt).toLocaleDateString()}</Text>
-                </View>
-              </View>
-            ))}
-          </View>
-        )}
-
-        {/* Past Sessions */}
-        {pastTokens.length > 0 && (
-          <View style={{ marginBottom: spacing.md }}>
-            <Text style={styles.sectionTitle}>📜 Past Sessions</Text>
-            {pastTokens.map(t => (
-              <View key={t._id} style={[styles.pendingCard, t.status === 'REJECTED' && styles.rejectedCard]}>
-                <Text style={styles.pendingIcon}>{t.status === 'REJECTED' ? '❌' : '✅'}</Text>
-                <View>
-                  <Text style={styles.pendingTitle}>{t.type} · {t.status}</Text>
-                  {t.doctorId && <Text style={styles.pendingSub}>Dr. {t.doctorId?.name}</Text>}
-                  <Text style={styles.pendingDate}>{new Date(t.createdAt).toLocaleDateString()}</Text>
-                </View>
-              </View>
-            ))}
-          </View>
-        )}
-
         <View style={{ height: 100 }} />
       </ScrollView>
     </SafeAreaView>
@@ -241,26 +194,17 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   header: { backgroundColor: colors.white, padding: spacing.md, ...shadow.sm },
   headerTitle: { fontSize: 20, fontWeight: '800', color: colors.text },
-  requestSection: { backgroundColor: colors.white, borderRadius: radius.lg, padding: spacing.md, marginBottom: spacing.md, ...shadow.sm },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: colors.text, marginBottom: spacing.xs },
-  sectionSub: { fontSize: 12, color: colors.textSecondary, marginBottom: spacing.md },
-  requestBtns: { flexDirection: 'row', gap: spacing.sm },
-  requestBtn: { flex: 1, backgroundColor: colors.primaryLight, borderRadius: radius.md, padding: spacing.md, alignItems: 'center', borderWidth: 1.5, borderColor: colors.primary },
-  requestBtnVideo: { backgroundColor: colors.primary, borderColor: colors.primary },
-  requestBtnIcon: { fontSize: 28, marginBottom: spacing.xs },
-  requestBtnText: { fontSize: 14, fontWeight: '700', color: colors.primary },
-  activeCard: { backgroundColor: colors.successLight, borderRadius: radius.md, padding: spacing.md, marginBottom: spacing.sm, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1.5, borderColor: colors.success },
-  activeCardLeft: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  activeDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.success },
-  activeCardTitle: { fontSize: 15, fontWeight: '700', color: colors.text },
-  activeCardSub: { fontSize: 12, color: colors.textSecondary },
-  activeCardArrow: { fontSize: 24, color: colors.success },
-  pendingCard: { backgroundColor: colors.white, borderRadius: radius.md, padding: spacing.md, marginBottom: spacing.sm, flexDirection: 'row', alignItems: 'center', gap: spacing.sm, ...shadow.sm },
-  rejectedCard: { opacity: 0.6 },
-  pendingIcon: { fontSize: 24 },
-  pendingTitle: { fontSize: 14, fontWeight: '600', color: colors.text },
-  pendingSub: { fontSize: 12, color: colors.textSecondary },
-  pendingDate: { fontSize: 11, color: colors.textLight, marginTop: 2 },
+  sectionTitle: { fontSize: 14, fontWeight: '700', color: colors.textSecondary, marginBottom: spacing.sm, textTransform: 'uppercase', letterSpacing: 0.5 },
+  chatItem: { backgroundColor: colors.white, borderRadius: radius.md, padding: spacing.md, marginBottom: spacing.sm, flexDirection: 'row', alignItems: 'center', ...shadow.sm },
+  adminChatItem: { borderLeftWidth: 3, borderLeftColor: colors.primary },
+  chatItemAvatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primaryLight, alignItems: 'center', justifyContent: 'center', marginRight: spacing.sm },
+  chatItemAvatarText: { fontSize: 18, fontWeight: '700', color: colors.primary },
+  chatItemName: { fontSize: 15, fontWeight: '600', color: colors.text },
+  chatItemSub: { fontSize: 12, color: colors.textSecondary, marginTop: 2 },
+  chatItemArrow: { fontSize: 24, color: colors.textLight },
+  emptyState: { alignItems: 'center', padding: spacing.xl },
+  emptyIcon: { fontSize: 48, marginBottom: spacing.sm },
+  emptyText: { fontSize: 14, color: colors.textSecondary },
   chatHeader: { flexDirection: 'row', alignItems: 'center', padding: spacing.md, backgroundColor: colors.primary, gap: spacing.sm },
   backBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
   backBtnText: { fontSize: 28, color: colors.white, fontWeight: '300' },

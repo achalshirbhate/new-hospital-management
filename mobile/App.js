@@ -13,59 +13,61 @@ import RegisterScreen from './src/screens/RegisterScreen';
 import ForgotPasswordScreen from './src/screens/ForgotPasswordScreen';
 import ResetPasswordScreen from './src/screens/ResetPasswordScreen';
 
-// Main Doctor screens
+// Main Doctor (Admin) screens
 import OverviewScreen from './src/screens/main/OverviewScreen';
+import AdminChatScreen from './src/screens/main/AdminChatScreen';
 import ReferralsScreen from './src/screens/main/ReferralsScreen';
-import ChatTokensScreen from './src/screens/main/ChatTokensScreen';
 import SocialFeedManagerScreen from './src/screens/main/SocialFeedScreen';
 import LaunchPadAdminScreen from './src/screens/main/LaunchPadScreen';
 
 // Doctor screens
 import PatientsScreen from './src/screens/doctor/PatientsScreen';
-import DoctorReferralsScreen from './src/screens/doctor/ReferralsScreen';
+import DoctorChatScreen from './src/screens/doctor/DoctorChatScreen';
+import LaunchPadSubmitScreen from './src/screens/shared/LaunchPadSubmitScreen';
+import SocialFeedScreen from './src/screens/shared/SocialFeedScreen';
 
 // Patient screens
-import ProfileScreen from './src/screens/patient/ProfileScreen';
-import ChatScreen from './src/screens/patient/ChatScreen';
-
-// Shared screens
-import SocialFeedScreen from './src/screens/shared/SocialFeedScreen';
-import LaunchPadSubmitScreen from './src/screens/shared/LaunchPadSubmitScreen';
+import PatientHomeScreen from './src/screens/patient/PatientHomeScreen';
+import PatientChatScreen from './src/screens/patient/ChatScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 const tabIcon = (name, focused) => {
   const icons = {
-    Overview: focused ? '📊' : '📊',
-    Referrals: focused ? '🔄' : '🔄',
-    'Chat Tokens': focused ? '💬' : '💬',
-    'Social Feed': focused ? '📢' : '📢',
-    LaunchPad: focused ? '🚀' : '🚀',
-    Patients: focused ? '👥' : '👥',
-    Reports: focused ? '📄' : '📄',
-    Profile: focused ? '👤' : '👤',
-    Chat: focused ? '💬' : '💬',
+    Home: '🏠', Chat: '💬', Referrals: '🔄', Feed: '📢', LaunchPad: '🚀',
+    Patients: '👥', Admin: '⚙️', Profile: '👤',
   };
-  return <Text style={{ fontSize: 20 }}>{icons[name] || '•'}</Text>;
+  return (
+    <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.5 }}>{icons[name] || '•'}</Text>
+  );
+};
+
+const tabOptions = {
+  tabBarActiveTintColor: colors.primary,
+  tabBarInactiveTintColor: colors.gray400,
+  tabBarStyle: {
+    paddingBottom: 8,
+    paddingTop: 4,
+    height: 64,
+    backgroundColor: colors.white,
+    borderTopColor: colors.border,
+    borderTopWidth: 1,
+  },
+  tabBarLabelStyle: { fontSize: 10, fontWeight: '600' },
+  headerShown: false,
 };
 
 function MainDoctorTabs() {
   return (
     <Tab.Navigator screenOptions={({ route }) => ({
+      ...tabOptions,
       tabBarIcon: ({ focused }) => tabIcon(route.name, focused),
-      tabBarActiveTintColor: colors.primary,
-      tabBarInactiveTintColor: colors.gray400,
-      tabBarStyle: { paddingBottom: 4, height: 60 },
-      tabBarLabelStyle: { fontSize: 10, fontWeight: '600' },
-      headerStyle: { backgroundColor: colors.primary },
-      headerTintColor: '#fff',
-      headerTitleStyle: { fontWeight: '700' },
     })}>
-      <Tab.Screen name="Overview" component={OverviewScreen} />
+      <Tab.Screen name="Home" component={OverviewScreen} />
+      <Tab.Screen name="Chat" component={AdminChatScreen} />
       <Tab.Screen name="Referrals" component={ReferralsScreen} />
-      <Tab.Screen name="Chat Tokens" component={ChatTokensScreen} />
-      <Tab.Screen name="Social Feed" component={SocialFeedManagerScreen} />
+      <Tab.Screen name="Feed" component={SocialFeedManagerScreen} />
       <Tab.Screen name="LaunchPad" component={LaunchPadAdminScreen} />
     </Tab.Navigator>
   );
@@ -74,19 +76,13 @@ function MainDoctorTabs() {
 function DoctorTabs() {
   return (
     <Tab.Navigator screenOptions={({ route }) => ({
+      ...tabOptions,
       tabBarIcon: ({ focused }) => tabIcon(route.name, focused),
-      tabBarActiveTintColor: colors.primary,
-      tabBarInactiveTintColor: colors.gray400,
-      tabBarStyle: { paddingBottom: 4, height: 60 },
-      tabBarLabelStyle: { fontSize: 10, fontWeight: '600' },
-      headerStyle: { backgroundColor: colors.primary },
-      headerTintColor: '#fff',
-      headerTitleStyle: { fontWeight: '700' },
     })}>
       <Tab.Screen name="Patients" component={PatientsScreen} />
-      <Tab.Screen name="Referrals" component={DoctorReferralsScreen} />
+      <Tab.Screen name="Chat" component={DoctorChatScreen} />
       <Tab.Screen name="LaunchPad" component={LaunchPadSubmitScreen} />
-      <Tab.Screen name="Social Feed" component={SocialFeedScreen} />
+      <Tab.Screen name="Feed" component={SocialFeedScreen} />
     </Tab.Navigator>
   );
 }
@@ -94,19 +90,13 @@ function DoctorTabs() {
 function PatientTabs() {
   return (
     <Tab.Navigator screenOptions={({ route }) => ({
+      ...tabOptions,
       tabBarIcon: ({ focused }) => tabIcon(route.name, focused),
-      tabBarActiveTintColor: colors.primary,
-      tabBarInactiveTintColor: colors.gray400,
-      tabBarStyle: { paddingBottom: 4, height: 60 },
-      tabBarLabelStyle: { fontSize: 10, fontWeight: '600' },
-      headerStyle: { backgroundColor: colors.primary },
-      headerTintColor: '#fff',
-      headerTitleStyle: { fontWeight: '700' },
     })}>
-      <Tab.Screen name="Profile" component={ProfileScreen} />
-      <Tab.Screen name="Chat" component={ChatScreen} />
+      <Tab.Screen name="Home" component={PatientHomeScreen} />
+      <Tab.Screen name="Chat" component={PatientChatScreen} />
       <Tab.Screen name="LaunchPad" component={LaunchPadSubmitScreen} />
-      <Tab.Screen name="Social Feed" component={SocialFeedScreen} />
+      <Tab.Screen name="Feed" component={SocialFeedScreen} />
     </Tab.Navigator>
   );
 }
@@ -116,8 +106,9 @@ function RootNavigator() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background }}>
         <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={{ marginTop: 12, color: colors.textSecondary, fontSize: 14 }}>Loading...</Text>
       </View>
     );
   }
@@ -128,8 +119,8 @@ function RootNavigator() {
         <>
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Register" component={RegisterScreen} />
-          <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ title: 'Forgot Password' }} />
-          <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} options={{ title: 'Reset Password' }} />
+          <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+          <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
         </>
       ) : user.role === 'MAIN_DOCTOR' ? (
         <Stack.Screen name="MainDoctor" component={MainDoctorTabs} />
