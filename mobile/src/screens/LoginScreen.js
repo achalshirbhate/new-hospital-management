@@ -37,9 +37,6 @@ export default function LoginScreen({ navigation }) {
             </View>
             <Text style={styles.appName}>Dr. Ravikant Patil</Text>
             <Text style={styles.appSub}>Tele Patient System</Text>
-            <View style={styles.tagBadge}>
-              <Text style={styles.tagText}>🏥 Cardiac Care · Telemedicine</Text>
-            </View>
           </View>
 
           {/* Login Card */}
@@ -91,29 +88,10 @@ export default function LoginScreen({ navigation }) {
             </TouchableOpacity>
           </View>
 
-          {/* Role Info */}
-          <View style={styles.rolesCard}>
-            <Text style={styles.rolesTitle}>System Roles</Text>
-            <View style={styles.rolesRow}>
-              <RoleChip icon="👑" label="Admin" color={colors.primary} />
-              <RoleChip icon="👨‍⚕️" label="Doctor" color={colors.success} />
-              <RoleChip icon="🫀" label="Patient" color={colors.secondary} />
-            </View>
-          </View>
-
           <View style={{ height: 40 }} />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
-  );
-}
-
-function RoleChip({ icon, label, color }) {
-  return (
-    <View style={[styles.roleChip, { borderColor: color, backgroundColor: color + '15' }]}>
-      <Text style={styles.roleChipIcon}>{icon}</Text>
-      <Text style={[styles.roleChipText, { color }]}>{label}</Text>
-    </View>
   );
 }
 
@@ -131,8 +109,6 @@ const styles = StyleSheet.create({
   logoEmoji: { fontSize: 44 },
   appName: { fontSize: 26, fontWeight: '900', color: colors.text, textAlign: 'center', letterSpacing: -0.5 },
   appSub: { fontSize: 15, color: colors.primary, fontWeight: '600', marginTop: 4, textAlign: 'center' },
-  tagBadge: { backgroundColor: colors.primaryLight, borderRadius: radius.full, paddingHorizontal: spacing.md, paddingVertical: spacing.xs, marginTop: spacing.sm },
-  tagText: { fontSize: 12, color: colors.primary, fontWeight: '600' },
   card: { backgroundColor: colors.white, borderRadius: radius.xl, padding: spacing.lg, ...shadow.md, marginBottom: spacing.md },
   cardTitle: { fontSize: 22, fontWeight: '800', color: colors.text, marginBottom: 4 },
   cardSub: { fontSize: 14, color: colors.textSecondary, marginBottom: spacing.lg },
@@ -155,10 +131,4 @@ const styles = StyleSheet.create({
     ...shadow.sm,
   },
   loginBtnText: { color: colors.white, fontSize: 16, fontWeight: '800', letterSpacing: 0.3 },
-  rolesCard: { backgroundColor: colors.white, borderRadius: radius.lg, padding: spacing.md, ...shadow.sm },
-  rolesTitle: { fontSize: 12, fontWeight: '700', color: colors.textSecondary, textAlign: 'center', marginBottom: spacing.sm, textTransform: 'uppercase', letterSpacing: 1 },
-  rolesRow: { flexDirection: 'row', justifyContent: 'center', gap: spacing.sm },
-  roleChip: { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: radius.full, paddingHorizontal: spacing.sm, paddingVertical: 6, borderWidth: 1.5 },
-  roleChipIcon: { fontSize: 14 },
-  roleChipText: { fontSize: 12, fontWeight: '700' },
 });

@@ -6,6 +6,7 @@ import { Text, ActivityIndicator, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { colors } from './src/theme';
+import FloatingChatbot from './src/components/FloatingChatbot';
 
 // Auth
 import LoginScreen from './src/screens/LoginScreen';
@@ -30,11 +31,6 @@ import AppointmentsScreen from './src/screens/patient/AppointmentsScreen';
 import MedicalHistoryScreen from './src/screens/patient/MedicalHistoryScreen';
 import PatientProfileScreen from './src/screens/patient/PatientProfileScreen';
 
-// Shared
-import SocialFeedScreen from './src/screens/shared/SocialFeedScreen';
-import LaunchPadSubmitScreen from './src/screens/shared/LaunchPadSubmitScreen';
-import ChatbotScreen from './src/screens/shared/ChatbotScreen';
-
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -53,55 +49,69 @@ const tabOptions = {
   headerShown: false,
 };
 
+// Wrapper that adds floating chatbot to any screen
+function WithChatbot({ children }) {
+  return (
+    <View style={{ flex: 1 }}>
+      {children}
+      <FloatingChatbot />
+    </View>
+  );
+}
+
 function MainDoctorTabs() {
   return (
-    <Tab.Navigator screenOptions={({ route }) => ({
-      ...tabOptions,
-      tabBarIcon: ({ focused }) => {
-        const icons = { Home: '🏠', Chat: '💬', Referrals: '🔄', Feed: '📢', 'AI Bot': '🤖' };
-        return <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.45 }}>{icons[route.name] || '•'}</Text>;
-      },
-    })}>
-      <Tab.Screen name="Home" component={OverviewScreen} />
-      <Tab.Screen name="Chat" component={AdminChatScreen} />
-      <Tab.Screen name="Referrals" component={ReferralsScreen} />
-      <Tab.Screen name="Feed" component={SocialFeedManagerScreen} />
-      <Tab.Screen name="AI Bot" component={ChatbotScreen} />
-    </Tab.Navigator>
+    <WithChatbot>
+      <Tab.Navigator screenOptions={({ route }) => ({
+        ...tabOptions,
+        tabBarIcon: ({ focused }) => {
+          const icons = { Home: '🏠', Chat: '💬', Referrals: '🔄', Feed: '📢', LaunchPad: '🚀' };
+          return <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.45 }}>{icons[route.name] || '•'}</Text>;
+        },
+      })}>
+        <Tab.Screen name="Home" component={OverviewScreen} />
+        <Tab.Screen name="Chat" component={AdminChatScreen} />
+        <Tab.Screen name="Referrals" component={ReferralsScreen} />
+        <Tab.Screen name="Feed" component={SocialFeedManagerScreen} />
+        <Tab.Screen name="LaunchPad" component={LaunchPadAdminScreen} />
+      </Tab.Navigator>
+    </WithChatbot>
   );
 }
 
 function DoctorTabs() {
   return (
-    <Tab.Navigator screenOptions={({ route }) => ({
-      ...tabOptions,
-      tabBarIcon: ({ focused }) => {
-        const icons = { Patients: '👥', Chat: '💬', 'AI Bot': '🤖', Profile: '👤' };
-        return <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.45 }}>{icons[route.name] || '•'}</Text>;
-      },
-    })}>
-      <Tab.Screen name="Patients" component={PatientsScreen} />
-      <Tab.Screen name="Chat" component={DoctorChatScreen} />
-      <Tab.Screen name="AI Bot" component={ChatbotScreen} />
-      <Tab.Screen name="Profile" component={DoctorProfileScreen} />
-    </Tab.Navigator>
+    <WithChatbot>
+      <Tab.Navigator screenOptions={({ route }) => ({
+        ...tabOptions,
+        tabBarIcon: ({ focused }) => {
+          const icons = { Patients: '👥', Chat: '💬', Profile: '👤' };
+          return <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.45 }}>{icons[route.name] || '•'}</Text>;
+        },
+      })}>
+        <Tab.Screen name="Patients" component={PatientsScreen} />
+        <Tab.Screen name="Chat" component={DoctorChatScreen} />
+        <Tab.Screen name="Profile" component={DoctorProfileScreen} />
+      </Tab.Navigator>
+    </WithChatbot>
   );
 }
 
 function PatientTabs() {
   return (
-    <Tab.Navigator screenOptions={({ route }) => ({
-      ...tabOptions,
-      tabBarIcon: ({ focused }) => {
-        const icons = { Appointments: '📅', History: '📋', 'AI Bot': '🤖', Profile: '👤' };
-        return <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.45 }}>{icons[route.name] || '•'}</Text>;
-      },
-    })}>
-      <Tab.Screen name="Appointments" component={AppointmentsScreen} />
-      <Tab.Screen name="History" component={MedicalHistoryScreen} />
-      <Tab.Screen name="AI Bot" component={ChatbotScreen} />
-      <Tab.Screen name="Profile" component={PatientProfileScreen} />
-    </Tab.Navigator>
+    <WithChatbot>
+      <Tab.Navigator screenOptions={({ route }) => ({
+        ...tabOptions,
+        tabBarIcon: ({ focused }) => {
+          const icons = { Appointments: '📅', History: '📋', Profile: '👤' };
+          return <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.45 }}>{icons[route.name] || '•'}</Text>;
+        },
+      })}>
+        <Tab.Screen name="Appointments" component={AppointmentsScreen} />
+        <Tab.Screen name="History" component={MedicalHistoryScreen} />
+        <Tab.Screen name="Profile" component={PatientProfileScreen} />
+      </Tab.Navigator>
+    </WithChatbot>
   );
 }
 
