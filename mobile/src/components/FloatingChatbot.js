@@ -4,28 +4,19 @@ import {
   FlatList, KeyboardAvoidingView, Platform, ActivityIndicator,
   Modal, Image, Animated, Dimensions,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { colors, spacing, radius, shadow } from '../theme';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-// Uses local nurse image from assets
-// To update: replace assets/nurse-bot.png with the nurse image
-const NURSE_IMAGE = require('../../assets/nurse-bot.png');
-
-// Fallback nurse avatar component when image not loaded
+// Nurse avatar — uses emoji fallback (no local file dependency)
 function NurseAvatar({ style }) {
-  const [error, setError] = React.useState(false);
-  if (error) {
-    return (
-      <View style={[style, { backgroundColor: colors.primaryLight, alignItems: 'center', justifyContent: 'center' }]}>
-        <Text style={{ fontSize: style?.width ? style.width * 0.5 : 20 }}>👩‍⚕️</Text>
-      </View>
-    );
-  }
-  return <Image source={NURSE_IMAGE} style={style} resizeMode="cover" onError={() => setError(true)} />;
+  return (
+    <View style={[style, { backgroundColor: '#E3F2FD', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }]}>
+      <Text style={{ fontSize: (style?.width || 32) * 0.55 }}>👩‍⚕️</Text>
+    </View>
+  );
 }
 
 const QUICK_QUESTIONS = [
@@ -123,7 +114,9 @@ export default function FloatingChatbot() {
       {/* Floating Button */}
       {!open && (
         <TouchableOpacity style={styles.fab} onPress={openChat} activeOpacity={0.9}>
-          <NurseAvatar style={styles.fabImage} />
+          <View style={styles.fabInner}>
+            <Text style={styles.fabEmoji}>👩‍⚕️</Text>
+          </View>
           <View style={styles.fabBadge}>
             <Text style={styles.fabBadgeText}>AI</Text>
           </View>
@@ -241,7 +234,6 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    overflow: 'hidden',
     backgroundColor: colors.white,
     borderWidth: 2.5,
     borderColor: colors.primary,
@@ -251,7 +243,18 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
     zIndex: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
+  fabInner: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#E3F2FD',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  fabEmoji: { fontSize: 30 },
   fabImage: { width: '100%', height: '100%' },
   fabBadge: {
     position: 'absolute',
