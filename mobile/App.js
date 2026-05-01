@@ -7,32 +7,33 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { colors } from './src/theme';
 
-// ── Auth ──────────────────────────────────────────────────────────────────────
+// Auth
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
 import ForgotPasswordScreen from './src/screens/ForgotPasswordScreen';
 import ResetPasswordScreen from './src/screens/ResetPasswordScreen';
 
-// ── Admin (Main Doctor) ───────────────────────────────────────────────────────
+// Admin
 import OverviewScreen from './src/screens/main/OverviewScreen';
 import AdminChatScreen from './src/screens/main/AdminChatScreen';
 import ReferralsScreen from './src/screens/main/ReferralsScreen';
 import SocialFeedManagerScreen from './src/screens/main/SocialFeedScreen';
 import LaunchPadAdminScreen from './src/screens/main/LaunchPadScreen';
 
-// ── Doctor ────────────────────────────────────────────────────────────────────
+// Doctor
 import PatientsScreen from './src/screens/doctor/PatientsScreen';
 import DoctorChatScreen from './src/screens/doctor/DoctorChatScreen';
 import DoctorProfileScreen from './src/screens/doctor/DoctorProfileScreen';
 
-// ── Patient ───────────────────────────────────────────────────────────────────
+// Patient
 import AppointmentsScreen from './src/screens/patient/AppointmentsScreen';
 import MedicalHistoryScreen from './src/screens/patient/MedicalHistoryScreen';
 import PatientProfileScreen from './src/screens/patient/PatientProfileScreen';
 
-// ── Shared ────────────────────────────────────────────────────────────────────
+// Shared
 import SocialFeedScreen from './src/screens/shared/SocialFeedScreen';
 import LaunchPadSubmitScreen from './src/screens/shared/LaunchPadSubmitScreen';
+import ChatbotScreen from './src/screens/shared/ChatbotScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -52,13 +53,12 @@ const tabOptions = {
   headerShown: false,
 };
 
-// ── Admin Tabs ────────────────────────────────────────────────────────────────
 function MainDoctorTabs() {
   return (
     <Tab.Navigator screenOptions={({ route }) => ({
       ...tabOptions,
       tabBarIcon: ({ focused }) => {
-        const icons = { Home: '🏠', Chat: '💬', Referrals: '🔄', Feed: '📢', LaunchPad: '🚀' };
+        const icons = { Home: '🏠', Chat: '💬', Referrals: '🔄', Feed: '📢', 'AI Bot': '🤖' };
         return <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.45 }}>{icons[route.name] || '•'}</Text>;
       },
     })}>
@@ -66,46 +66,45 @@ function MainDoctorTabs() {
       <Tab.Screen name="Chat" component={AdminChatScreen} />
       <Tab.Screen name="Referrals" component={ReferralsScreen} />
       <Tab.Screen name="Feed" component={SocialFeedManagerScreen} />
-      <Tab.Screen name="LaunchPad" component={LaunchPadAdminScreen} />
+      <Tab.Screen name="AI Bot" component={ChatbotScreen} />
     </Tab.Navigator>
   );
 }
 
-// ── Doctor Tabs (2 tabs as requested) ────────────────────────────────────────
 function DoctorTabs() {
   return (
     <Tab.Navigator screenOptions={({ route }) => ({
       ...tabOptions,
       tabBarIcon: ({ focused }) => {
-        const icons = { Patients: '👥', Chat: '💬', Profile: '👤' };
+        const icons = { Patients: '👥', Chat: '💬', 'AI Bot': '🤖', Profile: '👤' };
         return <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.45 }}>{icons[route.name] || '•'}</Text>;
       },
     })}>
       <Tab.Screen name="Patients" component={PatientsScreen} />
       <Tab.Screen name="Chat" component={DoctorChatScreen} />
+      <Tab.Screen name="AI Bot" component={ChatbotScreen} />
       <Tab.Screen name="Profile" component={DoctorProfileScreen} />
     </Tab.Navigator>
   );
 }
 
-// ── Patient Tabs (3 tabs as requested) ───────────────────────────────────────
 function PatientTabs() {
   return (
     <Tab.Navigator screenOptions={({ route }) => ({
       ...tabOptions,
       tabBarIcon: ({ focused }) => {
-        const icons = { Appointments: '📅', History: '📋', Profile: '👤' };
+        const icons = { Appointments: '📅', History: '📋', 'AI Bot': '🤖', Profile: '👤' };
         return <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.45 }}>{icons[route.name] || '•'}</Text>;
       },
     })}>
       <Tab.Screen name="Appointments" component={AppointmentsScreen} />
       <Tab.Screen name="History" component={MedicalHistoryScreen} />
+      <Tab.Screen name="AI Bot" component={ChatbotScreen} />
       <Tab.Screen name="Profile" component={PatientProfileScreen} />
     </Tab.Navigator>
   );
 }
 
-// ── Root Navigator ────────────────────────────────────────────────────────────
 function RootNavigator() {
   const { user, loading } = useAuth();
 

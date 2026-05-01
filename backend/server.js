@@ -51,6 +51,7 @@ app.use('/api/launchpad', require('./routes/launchpad'));
 app.use('/api/social', require('./routes/social'));
 app.use('/api/messages', require('./routes/messages'));
 app.use('/api/emergency', require('./routes/emergency'));
+app.use('/api/chatbot', require('./routes/chatbot'));
 
 // Socket.io - persist messages to DB
 const Message = require('./models/Message');
